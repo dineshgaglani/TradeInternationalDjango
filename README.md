@@ -9,4 +9,4 @@ This created the folders required to run Django.
 Reference: https://docs.docker.com/compose/django/
 
 Run only the line below next time since the necessary Django files are already created
-> docker-compose up
+> docker-compose up 
