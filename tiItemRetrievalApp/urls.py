@@ -1,5 +1,5 @@
 from django.urls import path
-from views import SearchResultProvider
+from tiItemRetrievalApp.views import SearchResultProvider
 
 urlpatterns = [
     path('', SearchResultProvider.as_view(), name='searchresults'),
