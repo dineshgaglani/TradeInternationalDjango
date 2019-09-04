@@ -1,6 +1,20 @@
 import requests
 import json
 
+def query_search_engine(searchParams):
+    endpoint = "http://searchUrl.com"
+    response_json_data_str = '[]'
+
+    for attempt in range(4):
+        params = searchParams + "&attempt=" + str(attempt + 1)
+        response = requests.get(endpoint + params)
+        if response.json_data:
+            response_json_data_str = response.json_data
+            break
+
+    return json.loads(response_json_data_str)
+
+
 def get_response_for_seller(sellingInCountry, product=""):
     #Construct the endpoint
     endpoint = "http://searchUrl.com"
@@ -9,22 +23,17 @@ def get_response_for_seller(sellingInCountry, product=""):
     params = "?sellingInCountry=" + sellingInCountry
     if (product != ""):
         params = params + "&product=" + product
-
     params = params + "&priceDiff>0&orderBy=desc"
 
-    response = requests.get(endpoint + params)
-    positivePriceDiffResponse = json.loads(response.json_data)
+    positivePriceDiffResponse = query_search_engine(params)
 
     #Call 2 - call for negative price diff
     params= "?buyingInCountry=" + sellingInCountry
     if (product != ""):
         params = params + "&product=" + product
-
     params = params + "&priceDiff<0&orderBy=asc"
 
-    response = requests.get(endpoint + params)
-    negativePriceDiffResponse = json.loads(response.json_data)
-
+    negativePriceDiffResponse = query_search_engine(params)
     negativePriceDiffResponseFlipped = flip_signs_and_buyer_seller(negativePriceDiffResponse)
     mergedResponseForSeller = merge_sort(positivePriceDiffResponse, negativePriceDiffResponseFlipped)
 

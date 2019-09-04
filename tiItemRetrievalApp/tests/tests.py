@@ -21,12 +21,16 @@ class search_test_cases(TestCase):
 
         #print ("mocks equal check for positive reponse", args[0] == 'http://searchUrl.com?sellingInCountry=India&priceDiff>0&orderBy=desc')
         #print ("mocks equal check for negative reponse", args[0] == 'http://searchUrl.com?buyingInCountry=India&priceDiff<0&orderBy=asc')
-        if args[0] == 'http://searchUrl.com?sellingInCountry=India&priceDiff>0&orderBy=desc':
+        if args[0] == 'http://searchUrl.com?sellingInCountry=India&priceDiff>0&orderBy=desc&attempt=1':
             #print ("Returning positive price mock object")
             return MockResponse('[ {"buyingInCountry": "USA", "sellingInCountry":"India", "priceDiff":"$200", "product":"samsung s9", "provider":"amazon", "productImage":"https://image"} ]', 200)
-        elif args[0] == 'http://searchUrl.com?buyingInCountry=India&priceDiff<0&orderBy=asc':
+        elif args[0] == 'http://searchUrl.com?buyingInCountry=India&priceDiff<0&orderBy=asc&attempt=1':
             #print ("Returning negative price mock object")
             return MockResponse('[ {"buyingInCountry": "India", "sellingInCountry":"China", "priceDiff":"-$300", "product":"samsung s9", "provider":"alibaba", "productImage":"https://imageFromAlibaba"} ]', 200)
+        elif args[0] == 'http://searchUrl.com?buyingInCountry=NoResult&priceDiff<0&orderBy=asc&attempt=4':
+            #print ("Returning negative price mock object")
+            return MockResponse('[ {"buyingInCountry": "NoResultResponseOn4thAttempt", "sellingInCountry":"NoResultResponseOn4thAttempt", "priceDiff":"-$300", "product":"NoResultResponseOn4thAttempt", "provider":"NoResultResponseOn4thAttempt", "productImage":"NoResultResponseOn4thAttempt"} ]', 200)
+
 
         return MockResponse(None, 404)
 
@@ -35,3 +39,8 @@ class search_test_cases(TestCase):
         response = search_client.get_response_for_seller("India")
         self.assertEqual(response, [{"buyingInCountry": "China", "sellingInCountry":"India", "priceDiff":"$300", "product":"samsung s9", "provider":"alibaba", "productImage":"https://imageFromAlibaba"},
                                     {"buyingInCountry": "USA", "sellingInCountry":"India", "priceDiff":"$200", "product":"samsung s9", "provider":"amazon", "productImage":"https://image"}])
+
+    @patch('requests.get', side_effect=mocked_requests_get)
+    def test_search_response_no_results_returned(self, mock_get):
+        response = search_client.get_response_for_seller("NoResult")
+        self.assertEqual(response, [{"buyingInCountry": "NoResultResponseOn4thAttempt", "sellingInCountry":"NoResultResponseOn4thAttempt", "priceDiff":"$300", "product":"NoResultResponseOn4thAttempt", "provider":"NoResultResponseOn4thAttempt", "productImage":"NoResultResponseOn4thAttempt"} ] )
